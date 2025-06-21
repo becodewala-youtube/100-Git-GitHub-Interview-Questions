@@ -628,3 +628,934 @@ It’s Git’s configuration file. It stores **user preferences** like name, ema
 > View with: `git config --global --edit`
 
 
+
+
+### ✅ **41. What is the Git Flow Branching Model?**
+
+**Git Flow** is a branching model for managing features, releases, and hotfixes in large projects.
+
+**Main branches:**
+
+* `main`: always contains production-ready code.
+* `develop`: integrates features and is used for testing before release.
+
+**Supporting branches:**
+
+* `feature/*`: for new features.
+* `release/*`: for preparing a new release.
+* `hotfix/*`: for urgent production fixes.
+
+**Flow:**
+
+1. Create a feature branch from `develop`.
+2. Merge feature into `develop`.
+3. Create a release branch from `develop`, test, and fix bugs.
+4. Merge release into both `main` and `develop`.
+5. Tag the release.
+6. Create hotfix from `main` if needed, then merge back.
+
+> Tools like `git-flow` CLI automate this process.
+
+
+
+### ✅ **42. What is `git reflog` and why is it useful?**
+
+**`git reflog`** records updates to the **HEAD** (every time it moves).
+
+**Why useful?**
+
+* You can **recover lost commits** even after a reset or rebase.
+
+**Example:**
+
+```bash
+git reflog
+# Shows history like:
+# abc1234 HEAD@{0}: reset: moving to HEAD~1
+```
+
+You can then do:
+
+```bash
+git checkout abc1234
+# or
+git reset --hard abc1234
+```
+
+
+### ✅ **43. How do you squash commits?**
+
+**Squashing** combines multiple commits into one.
+
+**During rebase:**
+
+```bash
+git rebase -i HEAD~3
+```
+
+You’ll see:
+
+```bash
+pick a1b2c3 First commit
+pick d4e5f6 Second commit
+pick g7h8i9 Third commit
+```
+
+Change to:
+
+```bash
+pick a1b2c3 First commit
+squash d4e5f6 Second commit
+squash g7h8i9 Third commit
+```
+
+Then save and edit the commit message.
+
+> Useful before PRs to keep history clean.
+
+ 
+
+### ✅ **44. What is the difference between `origin/master` and `master`?**
+
+| Term            | Meaning                            |
+| --------------- | ---------------------------------- |
+| `master`        | Local branch pointer               |
+| `origin/master` | Remote-tracking branch of `master` |
+
+> They may differ if you've made changes locally or the remote has updated.
+
+**Example:**
+
+```bash
+git fetch
+git diff master origin/master
+# Shows difference between local and remote
+```
+
+ 
+
+### ✅ **45. What are hooks in Git?**
+
+**Git hooks** are scripts triggered by Git actions like commit, push, or merge.
+
+* Located in `.git/hooks/`
+* Examples:
+
+  * `pre-commit`: run linters/tests before committing
+  * `post-commit`: send notifications
+  * `pre-push`: run CI checks
+
+**Example:**
+Create `.git/hooks/pre-commit`:
+
+```bash
+#!/bin/sh
+npm run lint
+```
+
+Make it executable:
+
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+
+
+### ✅ **46. How does Git handle binary files?**
+
+Git **does not efficiently store binary files** because:
+
+* It can’t diff or merge them well.
+* They bloat the repo history.
+
+> Use **Git LFS (Large File Storage)** for binary assets like images, videos, or models.
+
+
+
+### ✅ **47. How do you rename a file in Git?**
+
+Use:
+
+```bash
+git mv oldname.js newname.js
+git commit -m "Renamed file"
+```
+
+Alternatively:
+
+```bash
+mv oldname.js newname.js
+git add newname.js
+git rm oldname.js
+git commit -m "Renamed manually"
+```
+
+
+
+### ✅ **48. How do you ignore tracked files?**
+
+If a file is already tracked and you add it to `.gitignore`, it will **not be ignored** unless you untrack it:
+
+```bash
+git rm --cached filename
+git commit -m "Stop tracking file"
+```
+
+Then add it to `.gitignore`.
+
+ 
+
+### ✅ **49. What is a submodule in Git?**
+
+**Submodules** let you keep a Git repository **as a subdirectory** of another Git repo.
+
+Used when:
+
+* You want to include another repo (e.g., a library) without copying its files.
+
+**Commands:**
+
+```bash
+git submodule add https://github.com/user/repo.git subdir-name
+git submodule update --init --recursive
+```
+
+
+
+### ✅ **50. What is the difference between `git clean` and `git reset --hard`?**
+
+| Command            | Purpose                                 |
+| ------------------ | --------------------------------------- |
+| `git clean -fd`    | Deletes **untracked files/directories** |
+| `git reset --hard` | Resets **tracked files** to last commit |
+
+Use both together to fully clean your working directory:
+
+```bash
+git reset --hard
+git clean -fd
+```
+
+
+
+### ✅ **51. How do you permanently delete a file from a Git repository?**
+
+To delete a file **from history** (e.g., sensitive data):
+
+1. Use `filter-repo` (recommended) or `filter-branch`:
+
+```bash
+git filter-repo --path secret.txt --invert-paths
+```
+
+2. Force push:
+
+```bash
+git push origin --force --all
+```
+
+3. Invalidate caches (on GitHub or GitLab if needed).
+
+
+
+### ✅ **52. What is the difference between `.gitignore` and `.gitkeep`?**
+
+| File         | Purpose                                           |
+| ------------ | ------------------------------------------------- |
+| `.gitignore` | Tells Git to **ignore files/folders**             |
+| `.gitkeep`   | Not an official file—used to **track empty dirs** |
+
+> Git doesn’t track empty folders, so `.gitkeep` is a workaround.
+
+
+
+### ✅ **53. How do you push code to multiple remotes?**
+
+Add multiple remotes:
+
+```bash
+git remote add origin https://github.com/user/repo.git
+git remote add backup https://gitlab.com/user/repo.git
+```
+
+Push to both:
+
+```bash
+git push origin main
+git push backup main
+```
+
+Or:
+
+```bash
+git remote set-url --add --push origin https://github.com/user/repo.git
+git remote set-url --add --push origin https://gitlab.com/user/repo.git
+
+git push origin
+```
+
+
+
+### ✅ **54. How do you undo a merge?**
+
+#### Case 1: Merge not committed yet
+
+```bash
+git merge --abort
+```
+
+#### Case 2: Merge already committed
+
+```bash
+git reset --hard HEAD~1
+```
+
+> ⚠️ Use with caution, especially on shared branches.
+
+
+
+### ✅ **55. What is Git LFS (Large File Storage)?**
+
+**Git LFS** replaces large files (e.g., media, models) in your repo with text pointers, storing the real content in a separate location.
+
+**Setup:**
+
+```bash
+git lfs install
+git lfs track "*.mp4"
+git add .gitattributes
+git add video.mp4
+```
+
+> Helps keep repo size manageable.
+
+
+
+### ✅ **56. How does Git handle large repositories?**
+
+Git can become slow with:
+
+* Huge history
+* Large binary files
+* Too many refs or tags
+
+**Best practices:**
+
+* Use **Git LFS**
+* Clean old branches/tags
+* Use **shallow clones**:
+
+```bash
+git clone --depth 1 https://github.com/user/repo.git
+```
+
+* Split monoliths into multiple repos (monorepo vs polyrepo discussion)
+
+
+
+
+
+
+
+### **57. What is GitHub Actions?**
+
+**GitHub Actions** is GitHub's built-in **CI/CD tool** (Continuous Integration/Continuous Deployment).
+
+* Automates tasks like building, testing, and deploying code.
+* Defined using **YAML** files in `.github/workflows/`.
+
+**Example Use Case:**
+Run tests when you push code to the repo.
+
+
+
+### **58. How do you set up CI/CD with GitHub Actions?**
+
+1. Create a file:
+
+   ```
+   .github/workflows/ci.yml
+   ```
+
+2. Example workflow:
+
+   ```yaml
+   name: Node.js CI
+
+   on: [push, pull_request]
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - name: Set up Node
+           uses: actions/setup-node@v2
+           with:
+             node-version: '18'
+         - run: npm install
+         - run: npm test
+   ```
+
+> This workflow installs dependencies and runs tests on every push or PR.
+
+
+### **59. How do you add collaborators to a GitHub repository?**
+
+1. Go to your repository.
+2. Click on **Settings > Collaborators & Teams**.
+3. Add by GitHub username/email.
+4. They’ll receive an invitation.
+
+> You must have at least **Admin access** to do this.
+
+
+
+### **60. What are GitHub Issues and how are they used?**
+
+GitHub **Issues** are used for:
+
+* Bug reports
+* Feature requests
+* Task tracking
+
+**Example:**
+
+```markdown
+Title: 🐛 Fix navbar not responsive
+Description: The navbar breaks on screen widths < 400px.
+```
+
+You can assign, label, comment, and close issues.
+
+### **61. What are GitHub Projects?**
+
+**GitHub Projects** is a **Kanban-style board** that lets you manage and track issues, PRs, and tasks.
+
+Features:
+
+* Columns like “To Do,” “In Progress,” “Done”
+* Link Issues and PRs
+* Great for agile workflow
+
+
+### **62. What is the use of a `README.md` file?**
+
+The `README.md`:
+
+* Provides a **summary of the project**
+* Explains how to **install, run, or contribute**
+* Uses **Markdown syntax** for formatting
+
+**Example:**
+
+````markdown
+# My Project
+A web app to manage tasks.
+
+## Installation
+```bash
+npm install
+npm start
+````
+
+
+
+
+
+### **63. What is a GitHub Gist?**
+
+A **Gist** is a **simple way to share code snippets**, configs, or notes.
+
+- Can be public or secret.
+- Supports versioning.
+- You can embed them anywhere.
+
+[Create Gist here](https://gist.github.com/)
+
+
+### **64. What are GitHub Pages?**
+
+**GitHub Pages** lets you host **static websites** from a GitHub repo.
+
+**Use cases:**
+- Portfolios
+- Documentation
+- Blogs (via Jekyll)
+
+**Setup:**
+1. Push static files to a branch (`main`, `docs/`, or `gh-pages`).
+2. Go to **Settings > Pages**, choose source branch.
+
+
+### **65. How do you set branch protection rules on GitHub?**
+
+1. Go to **Settings > Branches**.
+2. Click “Add rule”.
+3. Select branch (e.g., `main`).
+4. Enable protections like:
+   - Require pull request review
+   - Require status checks
+   - Restrict who can push
+
+
+### **66. What is the difference between private and public repositories?**
+
+| Repository Type | Who Can See | Use Cases                      |
+|-----------------|-------------|--------------------------------|
+| Public          | Everyone    | Open-source, learning          |
+| Private         | Only invited| Commercial, internal projects  |
+
+
+
+### **67. What are GitHub Workflows and Secrets?**
+
+- **Workflows** = automation scripts defined in `.github/workflows/`.
+- **Secrets** = encrypted variables used in workflows.
+
+**Set secrets:**
+Go to **Settings > Secrets > Actions**
+
+Use in YAML:
+```yaml
+env:
+  API_KEY: ${{ secrets.API_KEY }}
+````
+
+
+
+### **68. What are CODEOWNERS in GitHub?**
+
+* File: `.github/CODEOWNERS`
+* Automatically **requests review** from specified people for changes.
+
+**Example:**
+
+```
+/src/ @vikash
+*.js @frontend-team
+```
+
+> Useful for enforcing responsibility over critical code.
+
+
+
+### **69. What is the purpose of the `.github` directory?**
+
+Holds GitHub-specific configurations like:
+
+* `workflows/`
+* `CODEOWNERS`
+* `ISSUE_TEMPLATE/`
+* `PULL_REQUEST_TEMPLATE.md`
+* `FUNDING.yml`
+
+
+
+## ✅ Git Best Practices & Real-World Scenarios
+
+
+
+### **70. What are some Git best practices?**
+
+* Use feature branches.
+* Write meaningful commit messages.
+* Commit small, logical changes.
+* Rebase before merging (if required).
+* Use `.gitignore`.
+* Use Pull Requests for review.
+
+
+
+### **71. How do you handle sensitive information in a Git repository?**
+
+* Use `.env` files.
+* Add `.env` to `.gitignore`.
+* Never hardcode secrets.
+* If leaked:
+
+  * Remove from history (`filter-repo`)
+  * Revoke exposed credentials
+
+
+
+### **72. How do you collaborate using Git in a team?**
+
+* Use **feature branches**.
+* Follow **PR-based reviews**.
+* Sync frequently:
+
+  ```bash
+  git pull origin main --rebase
+  ```
+* Resolve conflicts carefully.
+
+
+
+### **73. How do you review code in GitHub?**
+
+1. Go to Pull Request.
+2. Use “Files changed” tab.
+3. Add comments, suggest changes.
+4. Approve or Request changes.
+
+> Great for learning and quality control.
+
+
+
+### **74. How do you rollback production code using Git?**
+
+* Find last stable commit:
+
+  ```bash
+  git log
+  ```
+* Create a new branch or revert:
+
+  ```bash
+  git revert <bad_commit>
+  ```
+* Or reset and force push (only if safe):
+
+  ```bash
+  git reset --hard <good_commit>
+  git push origin main --force
+  ```
+
+
+
+### **75. What do you do if your branch is behind main or master?**
+
+Update your branch:
+
+#### Option 1: Merge
+
+```bash
+git checkout feature
+git pull origin main
+```
+
+#### Option 2: Rebase (cleaner)
+
+```bash
+git checkout feature
+git fetch
+git rebase origin/main
+```
+
+
+### **76. How do you safely delete a remote branch?**
+
+1. Delete locally:
+
+   ```bash
+   git branch -d feature-branch
+   ```
+
+2. Delete remotely:
+
+   ```bash
+   git push origin --delete feature-branch
+   ```
+
+
+
+### **77. How do you fix a detached HEAD?**
+
+Detached HEAD = you're not on a branch.
+
+**Fix:**
+
+```bash
+git checkout -b new-branch
+```
+
+This saves your current changes to a new branch.
+
+
+### **78. What to do if your commit has sensitive information (like passwords)?**
+
+1. **Remove the file**:
+
+   ```bash
+   git rm --cached .env
+   ```
+
+2. **Rewrite history**:
+
+   ```bash
+   git filter-repo --path .env --invert-paths
+   ```
+
+3. **Rotate credentials immediately**
+
+
+
+### **79. How do you recover a deleted branch?**
+
+Use `reflog` to find its last HEAD:
+
+```bash
+git reflog
+git checkout -b old-branch-name <commit-hash>
+```
+
+
+
+### **80. How do you test changes locally before pushing to remote?**
+
+* Run the app: `npm start`, `yarn dev`
+* Run tests: `npm test`, `jest`
+* Use linters: `eslint .`
+* Build: `npm run build`
+* Preview CI locally using tools like `act` or Docker
+
+
+
+## ✅ **Git Commands Cheat Sheet (Commonly Asked)**
+
+
+
+### 🔹 `git init`
+
+Initializes a new **empty Git repository** in your project directory.
+
+```bash
+git init
+```
+
+> 📁 Creates a `.git/` directory — start tracking changes.
+
+
+
+### 🔹 `git status`
+
+Shows the **current state** of your working directory and staging area.
+
+```bash
+git status
+```
+
+> ✅ See untracked, modified, and staged files.
+
+
+
+### 🔹 `git add .`
+
+Stages **all modified and untracked files** for the next commit.
+
+```bash
+git add .
+```
+
+> 📌 Use before `git commit`.
+
+
+
+### 🔹 `git commit -m "message"`
+
+Records changes to the repository with a **commit message**.
+
+```bash
+git commit -m "Add login page"
+```
+
+> 📝 Commit often with meaningful messages.
+
+
+
+### 🔹 `git push origin branch-name`
+
+Pushes your commits from the current branch to the **remote branch**.
+
+```bash
+git push origin main
+```
+
+> 🔼 Upload local changes to GitHub or any remote.
+
+
+
+### 🔹 `git pull origin branch-name`
+
+Fetches and merges changes from the remote branch into your **local branch**.
+
+```bash
+git pull origin main
+```
+
+> 🔄 Sync with the latest remote updates.
+
+
+
+### 🔹 `git clone repo-url`
+
+Clones a remote repository to your **local machine**.
+
+```bash
+git clone https://github.com/user/repo.git
+```
+
+> 📥 Copies the full code and history.
+
+
+
+### 🔹 `git checkout branch-name`
+
+Switches to an **existing branch**.
+
+```bash
+git checkout feature-login
+```
+
+> 🚀 Use to work on different features or versions.
+
+
+
+### 🔹 `git checkout -b new-branch`
+
+Creates and switches to a **new branch**.
+
+```bash
+git checkout -b feature-payment
+```
+
+> 🌿 Great for starting new features.
+
+
+
+### 🔹 `git branch`
+
+Lists all **local branches**.
+
+```bash
+git branch
+```
+
+> 🧭 Shows current branch with `*`.
+
+
+
+### 🔹 `git merge branch-name`
+
+Merges another branch into your current branch.
+
+```bash
+git merge feature-login
+```
+
+> 🔀 Brings in changes from another branch.
+
+
+
+### 🔹 `git reset --soft HEAD~1`
+
+Moves HEAD back one commit, **keeps changes staged**.
+
+```bash
+git reset --soft HEAD~1
+```
+
+> 🧼 Undo commit, but keep your changes ready to re-commit.
+
+
+
+### 🔹 `git reset --hard HEAD~1`
+
+Resets everything — **commit + staging + working directory** — to the previous state.
+
+```bash
+git reset --hard HEAD~1
+```
+
+> ⚠️ **Destructive** — be cautious.
+
+
+### 🔹 `git stash`
+
+Temporarily saves your **uncommitted changes**.
+
+```bash
+git stash
+```
+
+> 📦 Useful if you need to switch branches without committing.
+
+
+
+### 🔹 `git stash apply`
+
+Reapplies the most recent stash to your working directory.
+
+```bash
+git stash apply
+```
+
+> 🎯 Doesn’t delete the stash.
+
+
+
+### 🔹 `git stash drop`
+
+Deletes the most recent stash.
+
+```bash
+git stash drop
+```
+
+> 🗑️ Clean up stash list after applying.
+
+
+
+### 🔹 `git log`
+
+Shows a **list of commits**, with hashes, messages, dates.
+
+```bash
+git log
+```
+
+> 📚 Use `--oneline --graph` for a prettier log:
+
+```bash
+git log --oneline --graph --all
+```
+
+
+
+### 🔹 `git diff`
+
+Shows changes between:
+
+* Working directory and staging area
+* Two commits or branches
+
+```bash
+git diff
+```
+
+> 🔍 See what’s changed before committing.
+
+
+
+### 🔹 `git remote -v`
+
+Lists **remote repositories** and their URLs.
+
+```bash
+git remote -v
+```
+
+> 🔗 Verify where you're pushing and pulling from.
+
+
+### 🔹 `git remote add origin url`
+
+Adds a remote repository named `origin`.
+
+```bash
+git remote add origin https://github.com/user/repo.git
+```
+
+> 🔌 Connect your local repo to GitHub.
+
